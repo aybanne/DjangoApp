@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h1>Checkout</h1>
+
+<p>Total Amount: ${{ order.total }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <label>Shipping Address:</label><br>
+    <textarea name="shipping_address" rows="4" required>{{ order.shipping_address }}</textarea><br><br>
+    <button type="submit" class="btn">Pay & Confirm Order</button>
+</form>
+
+<a href="{% url 'cart' %}">Back to Cart</a>
+{% endblock %}

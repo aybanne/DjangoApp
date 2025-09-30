@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}E-Commerce Store{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+    <!-- Navigation -->
+    <nav>
+        {% if user.is_authenticated %}
+            <p>
+                Welcome, {{ user.username }} |
+                <a href="{% url 'cart' %}">
+                    Cart (
+                    {% if active_order %}
+                        {{ active_order.items.count }}
+                    {% else %}
+                        0
+                    {% endif %}
+                    )
+                </a> |
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                </form>
+            </p>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a> |
+            <a href="{% url 'signup' %}">Sign Up</a>
+        {% endif %}
+    </nav>
+
+    <!-- Page Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; {% now "Y" %} My E-Commerce Store</p>
+    </footer>
+</body>
+</html>

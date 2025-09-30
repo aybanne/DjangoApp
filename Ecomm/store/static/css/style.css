@@ -1,0 +1,336 @@
+/* ---------------- General Styles ---------------- */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9f9f9;
+    color: #333;
+}
+
+/* ---------------- Navigation / Header ---------------- */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #308af8;
+    padding: 10px 20px;
+    color: #fff;
+    flex-wrap: wrap;
+}
+
+nav .nav-left a,
+nav .nav-right a {
+    margin: 0 10px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav .nav-left a:hover,
+nav .nav-right a:hover {
+    text-decoration: underline;
+}
+
+/* Logout button */
+nav form button {
+    background: #ff4d4f;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+nav form button:hover {
+    background: #d9363e;
+}
+
+/* Cart Badge */
+.cart-link {
+    position: relative;
+    display: inline-block;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+}
+
+/* ---------------- Product Grid ---------------- */
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    justify-items: center; /* Center cards */
+}
+
+/* ---------------- Product Card ---------------- */
+.product-card {
+    width: 100%;
+    max-width: 250px;
+    height: 400px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    margin: auto;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Product Image */
+.product-card .product-image {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-card .product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+/* Product Info */
+.product-card h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: #222;
+}
+
+.product-card p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+    flex-grow: 1; /* Push price to bottom */
+}
+
+.product-card .price {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* ---------------- Footer ---------------- */
+footer {
+    background: #a600ff;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 30px;
+}
+
+/* ---------------- Responsive Adjustments ---------------- */
+@media (max-width: 1024px) {
+    .products {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .product-card {
+        height: auto;
+    }
+
+    .product-card .product-image {
+        height: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav p, nav a {
+        margin: 5px 0;
+    }
+
+    .products {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-card {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .product-card .product-image {
+        height: 120px;
+    }
+}
+/* Login Page Container */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+}
+
+.login-container {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h1 {
+    margin-bottom: 25px;
+    font-size: 2rem;
+    color: #007bff;
+}
+
+/* Login Form */
+.login-form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.login-form button:hover {
+    background: #0056b3;
+}
+
+/* Signup Link */
+.signup-link p {
+    margin-top: 20px;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.signup-link p a {
+    color: #007bff;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.signup-link p a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 20px;
+    }
+
+    .login-container h1 {
+        font-size: 1.5rem;
+    }
+}
+
+body.hide-nav nav {
+    display: none;
+}
+/* ---------------- Signup Form (reuse login styles) ---------------- */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.login-container h1 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #007bff;
+}
+
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+}
+
+.login-form input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.5);
+    outline: none;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 10px 0;
+    background: #007bff;
+    color: #fff;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.login-form button:hover {
+    background: #0056b3;
+}
+
+.signup-link {
+    margin-top: 15px;
+}
+
+.signup-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}

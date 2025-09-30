@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - E-Commerce Store{% endblock %}
+{% block header %}{% endblock %}  {# hides the nav bar #}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-container">
+        <h1>Create an Account</h1>
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <div class="signup-link">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
