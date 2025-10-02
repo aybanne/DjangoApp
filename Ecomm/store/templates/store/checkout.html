@@ -3,16 +3,130 @@
 {% block title %}Checkout{% endblock %}
 
 {% block content %}
-<h1>Checkout</h1>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-4 text-dark">Checkout</h2>
 
-<p>Total Amount: ${{ order.total }}</p>
+                    <!-- Order Summary -->
+                    <div class="mb-3">
+                        <h5>Total Amount: 
+                            <span class="text-success fw-bold">${{ order.total }}</span>
+                        </h5>
+                    </div>
 
-<form method="post">
-    {% csrf_token %}
-    <label>Shipping Address:</label><br>
-    <textarea name="shipping_address" rows="4" required>{{ order.shipping_address }}</textarea><br><br>
-    <button type="submit" class="btn">Pay & Confirm Order</button>
-</form>
+                    <!-- Checkout Form -->
+                    <form method="post" id="checkout-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="shipping_address" class="form-label">Shipping Address</label>
+                            <input type="text" 
+                                   id="shipping_address" 
+                                   name="shipping_address" 
+                                   class="form-control" 
+                                   placeholder="Enter your shipping address" 
+                                   value="{{ order.shipping_address }}" 
+                                   required>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-primary mt-2" 
+                                    onclick="useCurrentLocation()">
+                                📍 Use My Current Location
+                            </button>
+                        </div>
 
-<a href="{% url 'cart' %}">Back to Cart</a>
+                        <!-- Map preview -->
+                        <div id="map" style="height: 300px; border-radius: 8px;"></div>
+
+                        <!-- Confirmation / Attestation -->
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="attestation" required>
+                            <label class="form-check-label" for="attestation">
+                                I confirm that this purchase is intentional and I agree to the terms.
+                            </label>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="btn btn-primary mt-3 w-100">
+                            Pay & Confirm Order
+                        </button>
+                    </form>
+
+                    <div class="mt-3 text-center">
+                        <a href="{% url 'cart' %}" class="btn btn-outline-secondary">Back to Cart</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+let map, marker;
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Default map (Philippines center)
+    map = L.map("map").setView([12.8797, 121.7740], 5);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // Update map when address is typed
+    const addressInput = document.getElementById("shipping_address");
+    addressInput.addEventListener("blur", function () {
+        let address = addressInput.value;
+        if (address.trim() === "") return;
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let lat = data[0].lat;
+                    let lon = data[0].lon;
+
+                    if (marker) map.removeLayer(marker);
+                    marker = L.marker([lat, lon]).addTo(map);
+                    map.setView([lat, lon], 14);
+                }
+            })
+            .catch(error => console.error("Error fetching location:", error));
+    });
+});
+
+// Function to detect and use current location
+function useCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            // Reverse geocode with OpenStreetMap
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.display_name) {
+                        document.getElementById("shipping_address").value = data.display_name;
+                    }
+                })
+                .catch(() => alert("Unable to fetch address."));
+
+            // Always drop a pin & center map on current location
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lon]).addTo(map);
+            map.setView([lat, lon], 14);
+
+        }, function () {
+            alert("Location access denied.");
+        });
+    } else {
+        alert("Geolocation not supported in your browser.");
+    }
+}
+</script>
 {% endblock %}

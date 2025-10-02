@@ -3,32 +3,62 @@
 {% block title %}Your Cart{% endblock %}
 
 {% block content %}
-<h1>Your Cart</h1>
+<div class="container my-4">
+  <h1 class="mb-4 text-center">🛒 Your Cart</h1>
 
-{% if order and order.items.exists %}
-    <table>
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in order.items.all %}
-            <tr>
-                <td>{{ item.product.name }}</td>
-                <td>${{ item.price }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>${{ item.total_price }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+  {% if order and order.items.exists %}
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Product</th>
+          <th class="text-center">Price</th>
+          <th class="text-center">Quantity</th>
+          <th class="text-center">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.product.name }}</td>
+          <td class="text-center">${{ item.price }}</td>
+          <td class="text-center">
+            <div class="d-flex justify-content-center align-items-center flex-wrap">
+              <!-- Decrease -->
+              <form method="post" action="{% url 'update_cart' item.id %}" class="d-inline mx-1">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="decrease">
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">−</button>
+              </form>
+
+              <span class="mx-2 fw-bold">{{ item.quantity }}</span>
+
+              <!-- Increase -->
+              <form method="post" action="{% url 'update_cart' item.id %}" class="d-inline mx-1">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="increase">
+                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">+</button>
+              </form>
+            </div>
+          </td>
+          <td class="text-center">${{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-    <p><strong>Total: ${{ order.total }}</strong></p>
-    <a href="{% url 'checkout' %}">Proceed to Checkout</a>
-{% else %}
-    <p>Your cart is empty.</p>
-{% endif %}
+  </div>
+
+  <div class="d-flex justify-content-between flex-wrap mt-4">
+    <h4 class="fw-bold">Total: ${{ order.total }}</h4>
+    <a href="{% url 'checkout' %}" class="btn btn-lg btn-primary mt-2 mt-sm-0">
+      Proceed to Checkout
+    </a>
+  </div>
+
+  {% else %}
+  <div class="alert alert-info text-center">
+    Your cart is empty.
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

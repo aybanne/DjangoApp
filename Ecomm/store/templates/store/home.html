@@ -3,30 +3,243 @@
 {% block title %}Home - E-Commerce Store{% endblock %}
 
 {% block content %}
-<h1>Our Products</h1>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar (Desktop) -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light border-end collapse">
+            <div class="position-sticky p-3">
+                <h5 class="text-dark">Filters</h5>
+                <form method="get" class="filters">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Search</label>
+                        <input type="text" class="form-control" name="q" placeholder="Search products" value="{{ request.GET.q }}">
+                    </div>
 
-<div class="products">
-    {% for product in products %}
-        <div class="product-card">
-            <!-- Product Image -->
-            <div class="product-image">
-                <img src="{{ product.get_or_fetch_image }}" alt="{{ product.name }}">
+                    <!-- Category (Dropdown with Checkboxes) -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Category</label>
+                        <div class="dropdown w-100">
+                            <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                Select Categories
+                            </button>
+                            <ul class="dropdown-menu p-2 w-100" style="max-height: 250px; overflow-y: auto;">
+                                <!-- None Option -->
+                                <li>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="catNoneDesktop">
+                                        <label class="form-check-label text-dark" for="catNoneDesktop">None</label>
+                                    </div>
+                                </li>
+                                {% for category in categories %}
+                                    <li>
+                                        <div class="form-check">
+                                            <input class="form-check-input category-checkbox"
+                                                   type="checkbox"
+                                                   name="category"
+                                                   value="{{ category.0 }}"
+                                                   id="cat{{ category.0 }}"
+                                                   {% if category.0|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                            <label class="form-check-label text-dark" for="cat{{ category.0 }}">
+                                                {{ category.1 }}
+                                            </label>
+                                        </div>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted px-2">No categories available</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Price Range</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" class="form-control" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}">
+                            <input type="number" class="form-control" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}">
+                        </div>
+                    </div>
+
+                    <!-- Apply / Reset -->
+                    <button type="submit" class="btn btn-primary w-100 mb-2">Apply</button>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                </form>
             </div>
+        </nav>
 
-            <!-- Product Info -->
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-            <p class="price">${{ product.price }}</p>
-
-            <!-- Add to Cart Button -->
-            {% if user.is_authenticated %}
-                <a href="{% url 'add_to_cart' product.id %}">Add to Cart</a>
-            {% else %}
-                <a href="{% url 'login' %}">Login to Buy</a>
-            {% endif %}
+        <!-- Mobile Filter Toggle -->
+        <div class="d-md-none mb-3">
+            <button class="btn btn-outline-primary w-100" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+                Show Filters
+            </button>
         </div>
-    {% empty %}
-        <p>No products available yet.</p>
-    {% endfor %}
+
+        <!-- Offcanvas Sidebar (Mobile) -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title text-dark">Filters</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body">
+                <form method="get" class="filters">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Search</label>
+                        <input type="text" class="form-control" name="q" placeholder="Search products" value="{{ request.GET.q }}">
+                    </div>
+
+                    <!-- Category (Dropdown with Checkboxes) -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Category</label>
+                        <div class="dropdown w-100">
+                            <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                Select Categories
+                            </button>
+                            <ul class="dropdown-menu p-2 w-100" style="max-height: 250px; overflow-y: auto;">
+                                <!-- None Option -->
+                                <li>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="catNoneMobile">
+                                        <label class="form-check-label text-dark" for="catNoneMobile">None</label>
+                                    </div>
+                                </li>
+                                {% for category in categories %}
+                                    <li>
+                                        <div class="form-check">
+                                            <input class="form-check-input category-checkbox"
+                                                   type="checkbox"
+                                                   name="category"
+                                                   value="{{ category.0 }}"
+                                                   id="mcat{{ category.0 }}"
+                                                   {% if category.0|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                            <label class="form-check-label text-dark" for="mcat{{ category.0 }}">
+                                                {{ category.1 }}
+                                            </label>
+                                        </div>
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted px-2">No categories available</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Price Range</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" class="form-control" name="min_price" placeholder="Min" value="{{ request.GET.min_price }}">
+                            <input type="number" class="form-control" name="max_price" placeholder="Max" value="{{ request.GET.max_price }}">
+                        </div>
+                    </div>
+
+                    <!-- Apply / Reset -->
+                    <button type="submit" class="btn btn-primary w-100 mb-2">Apply</button>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h1 class="my-3 text-dark">Our Products</h1>
+            <div class="row">
+                {% for product in products %}
+                    <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <img src="{{ product.get_or_fetch_image }}" class="card-img-top" alt="{{ product.name }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-dark">{{ product.name }}</h5>
+                                <p class="card-text text-muted">{{ product.description }}</p>
+                                <p class="fw-bold text-primary">${{ product.price }}</p>
+
+                                {% if user.is_authenticated %}
+                                    <!-- Quantity Selector -->
+                                    <div class="d-flex align-items-center mb-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary qty-decrease" data-target="qty-{{ product.id }}">-</button>
+                                        <input type="text" id="qty-{{ product.id }}" value="1" class="form-control form-control-sm text-center mx-2" style="width: 60px;">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary qty-increase" data-target="qty-{{ product.id }}">+</button>
+                                    </div>
+
+                                    <!-- Add to Cart Form -->
+                                    <form action="{% url 'add_to_cart' product.id %}" method="post" class="mt-auto">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" id="hidden-qty-{{ product.id }}" value="1">
+                                        <button type="submit" class="btn btn-sm btn-success w-100">Add to Cart</button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline-primary">Login to Buy</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-dark">No products available yet.</p>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
 </div>
+
+<!-- Quantity Control & Category None Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Quantity controls
+    document.querySelectorAll(".qty-increase").forEach(btn => {
+        btn.addEventListener("click", function () {
+            let target = document.getElementById(this.dataset.target);
+            let hidden = document.getElementById("hidden-" + this.dataset.target);
+            target.value = parseInt(target.value) + 1;
+            hidden.value = target.value;
+        });
+    });
+
+    document.querySelectorAll(".qty-decrease").forEach(btn => {
+        btn.addEventListener("click", function () {
+            let target = document.getElementById(this.dataset.target);
+            let hidden = document.getElementById("hidden-" + this.dataset.target);
+            let newVal = Math.max(1, parseInt(target.value) - 1);
+            target.value = newVal;
+            hidden.value = newVal;
+        });
+    });
+
+    document.querySelectorAll("input[id^='qty-']").forEach(input => {
+        input.addEventListener("input", function () {
+            let hidden = document.getElementById("hidden-" + this.id);
+            hidden.value = this.value;
+        });
+    });
+
+    // Category "None" behavior (desktop + mobile)
+    const noneDesktop = document.getElementById("catNoneDesktop");
+    const noneMobile = document.getElementById("catNoneMobile");
+
+    const categoryCheckboxes = document.querySelectorAll(".category-checkbox");
+
+    function handleNoneCheckbox(noneCheckbox) {
+        noneCheckbox.addEventListener("change", function () {
+            if (this.checked) {
+                categoryCheckboxes.forEach(cb => cb.checked = false);
+            }
+        });
+    }
+
+    function handleCategoryCheckboxes() {
+        categoryCheckboxes.forEach(cb => {
+            cb.addEventListener("change", function () {
+                if (this.checked) {
+                    noneDesktop.checked = false;
+                    noneMobile.checked = false;
+                }
+            });
+        });
+    }
+
+    handleNoneCheckbox(noneDesktop);
+    handleNoneCheckbox(noneMobile);
+    handleCategoryCheckboxes();
+});
+</script>
 {% endblock %}

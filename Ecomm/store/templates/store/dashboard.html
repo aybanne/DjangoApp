@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; gap: 20px;">
+
+    <!-- Left Sidebar: Filters -->
+    <div style="width: 250px; border-right: 1px solid #ddd; padding: 15px;">
+        <h3>Filters</h3>
+        <form method="get" class="filter-form">
+            <!-- Status Filter -->
+            <label>Status:</label>
+            <select name="status">
+                <option value="">All</option>
+                <option value="paid" {% if request.GET.status == "paid" %}selected{% endif %}>Paid</option>
+                <option value="unpaid" {% if request.GET.status == "unpaid" %}selected{% endif %}>Unpaid</option>
+            </select>
+
+            <!-- Category Filter -->
+            <label>Category:</label>
+            <select name="category">
+                <option value="">All</option>
+                {% for product in products %}
+                    {% if product.category %}
+                        <option value="{{ product.category.name }}" 
+                            {% if request.GET.category == product.category.name %}selected{% endif %}>
+                            {{ product.category.name }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+
+            <!-- Days Filter -->
+            <label>Recent Days:</label>
+            <input type="number" name="days" value="{{ request.GET.days }}" placeholder="e.g. 7">
+
+            <br><br>
+            <button type="submit">Apply Filters</button>
+            <!-- ✅ Clear Filters -->
+            <a href="{% url 'dashboard' %}" class="clear-btn">Clear Filters</a>
+        </form>
+    </div>
+
+    <!-- Right Content: Dashboard Data -->
+    <div style="flex: 1; padding: 15px;">
+        <h2>Dashboard</h2>
+
+        <!-- Summary Cards -->
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="flex:1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h4>Total Sales</h4>
+                <p><strong>${{ total_sales }}</strong></p>
+            </div>
+            <div style="flex:1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h4>Total Orders</h4>
+                <p><strong>{{ total_orders }}</strong></p>
+            </div>
+            <div style="flex:1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h4>Total Products</h4>
+                <p><strong>{{ total_products }}</strong></p>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <h3>Orders</h3>
+        <table border="1" cellpadding="8" cellspacing="0" width="100%">
+            <thead style="background:#eee;">
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Total Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.user.username }}</td>
+                        <td>{% if order.paid %} Paid {% else %} Unpaid {% endif %}</td>
+                        <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ order.items.count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align:center;">No orders found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Some Quick Styling -->
+<style>
+    .filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .filter-form select,
+    .filter-form input {
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .filter-form button,
+    .filter-form .clear-btn {
+        margin-top: 10px;
+        background: #007bff;
+        color: white;
+        padding: 6px 12px;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+    }
+    .filter-form .clear-btn {
+        background: #6c757d;
+    }
+</style>
+{% endblock %}
