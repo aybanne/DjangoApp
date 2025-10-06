@@ -3,7 +3,57 @@
 {% block title %}Order Confirmed{% endblock %}
 
 {% block content %}
-<h1>Thank You!</h1>
-<p>Your order has been placed successfully.</p>
-<a href="{% url 'home' %}">Continue Shopping</a>
+<div class="container d-flex justify-content-center align-items-center min-vh-75">
+    <div class="card shadow-lg p-4 p-md-5 text-center" style="max-width: 500px; width: 100%;">
+        <!-- Success Icon -->
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+        </div>
+
+        <!-- Heading -->
+        <h2 class="fw-bold mb-3">Thank You!</h2>
+
+        <!-- Message -->
+        <p class="lead mb-4">Your order has been placed successfully.</p>
+
+        <!-- Order Summary (optional placeholder) -->
+        {% if order %}
+        <div class="mb-4 text-start border rounded p-3 bg-light">
+            <h5>Order Summary</h5>
+            <p><strong>Order ID:</strong> {{ order.id }}</p>
+            <p><strong>Total:</strong> ${{ order.total }}</p>
+            <p><strong>Items:</strong> {{ order.items.count }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Continue Shopping Button -->
+        <a href="{% url 'home' %}" class="btn btn-primary btn-lg w-100 fw-bold" 
+           onmouseover="this.style.transform='scale(1.05)';" 
+           onmouseout="this.style.transform='scale(1)';" 
+           style="transition: transform 0.2s;">
+           Continue Shopping
+        </a>
+    </div>
+</div>
+
+<!-- Optional Animation: Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    // Confetti animation on page load
+    window.onload = () => {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+        });
+    };
+</script>
+
+<style>
+    @media (max-width: 576px) {
+        .card {
+            padding: 3rem 1.5rem;
+        }
+    }
+</style>
 {% endblock %}

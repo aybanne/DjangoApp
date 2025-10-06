@@ -1,42 +1,58 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Product, Order, OrderItem
-from datetime import timedelta
+from django.db.models import Q, Sum
 from django.utils.timezone import now
-from django.db.models import Sum
+from datetime import timedelta
+from .models import Product, Order, OrderItem
 
-# Home view
+
+# ------------------------------
+# HOME / PRODUCT LISTING
+# ------------------------------
 def home(request):
     products = Product.objects.all()
 
-    # Get filters from GET request
-    query = request.GET.get("q")
-    category = request.GET.get("category")
+    # Distinct category list (id, name)
+    categories = Product.objects.values_list("category__id", "category__name").distinct()
+
+    # Get filters from query params
+    query = request.GET.get("q", "")
+    selected_categories = [c for c in request.GET.getlist("category") if c]  # ignore empty "None"
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
 
-    # Apply filters
+    # Apply search filter
     if query:
-        products = products.filter(name__icontains=query)
+        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
-    if category:
-        products = products.filter(category__name__icontains=category)  # only works if you have Category model/field
+    # Apply category filter
+    if selected_categories:
+        products = products.filter(category__id__in=selected_categories)
 
+    # Apply price range filter
     if min_price:
         products = products.filter(price__gte=min_price)
-
     if max_price:
         products = products.filter(price__lte=max_price)
 
     context = {
         "products": products,
+        "categories": categories,
+        "selected_categories": selected_categories,
+        "query": query,
+        "min_price": min_price,
+        "max_price": max_price,
     }
     return render(request, "store/home.html", context)
 
-# Add product to cart
+
+# ------------------------------
+# CART / ADD TO CART
+# ------------------------------
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
     # Get or create active order for the user
     order, created = Order.objects.get_or_create(user=request.user, paid=False)
 
@@ -57,88 +73,19 @@ def add_to_cart(request, product_id):
 
     return redirect('cart')
 
-# View the cart
+
+# ------------------------------
+# VIEW CART
+# ------------------------------
 @login_required
 def cart_view(request):
     order = Order.objects.filter(user=request.user, paid=False).first()
     return render(request, "store/cart.html", {"order": order})
 
-# Checkout view
-@login_required
-def checkout(request):
-    order = Order.objects.filter(user=request.user, paid=False).first()
-    if not order or not order.items.exists():
-        return redirect('home')
 
-    if request.method == "POST":
-        # You can integrate payment gateway here
-        order.paid = True
-        order.shipping_address = request.POST.get("shipping_address", "")
-        order.save()
-        return redirect('order_success')
-
-    return render(request, "store/checkout.html", {"order": order})
-
-# Order success page
-@login_required
-def order_success(request):
-    return render(request, "store/order_success.html")
-
-@login_required
-def dashboard(request):
-    # Get filters
-    status = request.GET.get("status")   # paid/unpaid
-    category = request.GET.get("category")
-    days = request.GET.get("days")
-
-    # Base Query
-    orders = Order.objects.all()
-    products = Product.objects.all()
-
-    # Filter by status
-    if status == "paid":
-        orders = orders.filter(paid=True)
-    elif status == "unpaid":
-        orders = orders.filter(paid=False)
-
-    # Filter by category
-    if category:
-        products = products.filter(category__name=category)
-
-    # Filter by recent days
-    if days:
-        try:
-            days = int(days)
-            start_date = now() - timedelta(days=days)
-            orders = orders.filter(created_at__gte=start_date)
-        except:
-            pass
-
-    # Dashboard summary
-    total_sales = orders.filter(paid=True).aggregate(total=Sum("items__price"))["total"] or 0
-    total_orders = orders.count()
-    total_products = products.count()
-
-    context = {
-        "orders": orders,
-        "products": products,
-        "total_sales": total_sales,
-        "total_orders": total_orders,
-        "total_products": total_products,
-    }
-    return render(request, "store/dashboard.html", context)
-
-@login_required
-def remove_from_cart(request, item_id):
-    item = get_object_or_404(
-        OrderItem,
-        id=item_id,
-        order__user=request.user,
-        order__paid=False
-    )
-    item.delete()
-    return redirect('cart')
-
+# ------------------------------
+# UPDATE CART ITEM QUANTITY
+# ------------------------------
 @login_required
 def update_cart(request, item_id):
     item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__paid=False)
@@ -157,22 +104,97 @@ def update_cart(request, item_id):
 
     return redirect("cart")
 
-def home(request):
+
+# ------------------------------
+# REMOVE ITEM FROM CART
+# ------------------------------
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id, order__user=request.user, order__paid=False)
+    item.delete()
+    return redirect('cart')
+
+
+# ------------------------------
+# CHECKOUT
+# ------------------------------
+@login_required
+def checkout(request):
+    order = Order.objects.filter(user=request.user, paid=False).first()
+    if not order or not order.items.exists():
+        return redirect('home')
+
+    if request.method == "POST":
+        # Integrate payment gateway here if needed
+        order.paid = True
+        order.shipping_address = request.POST.get("shipping_address", "")
+        order.save()
+        return redirect('order_success')
+
+    return render(request, "store/checkout.html", {"order": order})
+
+
+# ------------------------------
+# ORDER SUCCESS
+# ------------------------------
+@login_required
+def order_success(request):
+    return render(request, "store/order_success.html")
+
+
+# ------------------------------
+# DASHBOARD
+# ------------------------------
+@login_required
+def dashboard(request):
+    # Filters
+    status = request.GET.get("status")  # paid/unpaid
+    category = request.GET.get("category")
+    days = request.GET.get("days")
+
+    # Base Query
+    orders = Order.objects.all()
     products = Product.objects.all()
 
-    # Distinct category list (id, name)
-    categories = Product.objects.values_list("category__id", "category__name").distinct()
+    # Filter by order status
+    if status == "paid":
+        orders = orders.filter(paid=True)
+    elif status == "unpaid":
+        orders = orders.filter(paid=False)
 
-    # Get selected categories from query params
-    selected_categories = request.GET.getlist("category")
+    # Filter products by category
+    if category:
+        products = products.filter(category__name=category)
 
-    # Filter if any selected, else show all
-    if selected_categories:
-        products = products.filter(category__id__in=selected_categories)
+    # Filter orders by recent days
+    if days:
+        try:
+            days = int(days)
+            start_date = now() - timedelta(days=days)
+            orders = orders.filter(created_at__gte=start_date)
+        except ValueError:
+            pass
+
+    # Dashboard summary
+    total_sales = orders.filter(paid=True).aggregate(total=Sum("items__price"))["total"] or 0
+    total_orders = orders.count()
+    total_products = products.count()
 
     context = {
+        "orders": orders,
         "products": products,
-        "categories": categories,
-        "selected_categories": selected_categories,
+        "total_sales": total_sales,
+        "total_orders": total_orders,
+        "total_products": total_products,
     }
-    return render(request, "store/home.html", context)
+    return render(request, "store/dashboard.html", context)
+
+@login_required
+def manage_orders(request):
+    # Get orders for the logged-in user
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+
+    context = {
+        "orders": orders,
+    }
+    return render(request, "store/manage_orders.html", context)
